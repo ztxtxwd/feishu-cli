@@ -2,6 +2,10 @@
   "name": "feishu-cli",
   "version": "0.1.0",
   "description": "飞书命令行工具 - 多账户凭据管理",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ztxtxwd/feishu-cli"
+  },
   "type": "module",
   "bin": {
     "feishu": "./dist/index.js"
