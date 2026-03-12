@@ -1,5 +1,6 @@
 import { execSync } from "node:child_process";
-import puppeteer from "puppeteer";
+import { existsSync } from "node:fs";
+import puppeteer from "puppeteer-core";
 
 const LOGIN_URL =
   "https://accounts.feishu.cn/accounts/page/login?app_id=11&force_login=1&no_trap=1&redirect_uri=https%3A%2F%2Fwww.feishu.cn%2F";
@@ -7,9 +8,41 @@ const LOGIN_URL =
 const QR_INIT_URL = "/accounts/qrlogin/init";
 const SCAN_TIMEOUT = 120_000; // 2 minutes for QR scan
 
+const CHROME_PATHS = [
+  // macOS
+  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
+  "/Applications/Chromium.app/Contents/MacOS/Chromium",
+  // Linux
+  "/usr/bin/google-chrome",
+  "/usr/bin/google-chrome-stable",
+  "/usr/bin/chromium",
+  "/usr/bin/chromium-browser",
+  // Windows
+  "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
+  "C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe",
+];
+
+function findChrome(): string {
+  for (const p of CHROME_PATHS) {
+    if (existsSync(p)) return p;
+  }
+  // Try `which` as fallback on Unix
+  try {
+    const result = execSync("which google-chrome || which chromium || which chromium-browser", {
+      encoding: "utf-8",
+      timeout: 3_000,
+    }).trim();
+    if (result) return result;
+  } catch {}
+  throw new Error(
+    "未找到 Chrome/Chromium 浏览器，请先安装 Google Chrome",
+  );
+}
+
 export async function loginWithQR(): Promise<string> {
   const browser = await puppeteer.launch({
     headless: true,
+    executablePath: findChrome(),
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
 
