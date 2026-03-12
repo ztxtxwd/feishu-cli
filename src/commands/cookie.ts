@@ -1,0 +1,17 @@
+import { readConfig } from "../lib/config.js";
+import { getActiveProfile, getProfile } from "../lib/store.js";
+
+export function cookieCommand(name?: string): void {
+  const profile = name
+    ? getProfile(name)
+    : getActiveProfile();
+
+  if (!profile) {
+    const target = name ?? readConfig().activeProfile ?? "(无)";
+    process.stderr.write(`错误: Profile "${target}" 不存在\n`);
+    process.exit(1);
+  }
+
+  // Raw output to stdout only — safe for piping / $()
+  process.stdout.write(profile.cookies);
+}
